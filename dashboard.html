@@ -1,52 +1,173 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8"><title>Dashboard - Estoque</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Dashboard - Gestão de Estoque</title>
+    
+    <script>
+        if(localStorage.getItem('auth') !== 'true') window.location.href='index.html';
+    </script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background: #f4f4f4; }
+        header { background: #222; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .container { padding: 20px; max-width: 1000px; margin: auto; }
+        .alert { background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; margin-bottom: 20px; border-radius: 4px; color: #856404; }
+        table { width: 100%; border-collapse: collapse; background: white; margin-bottom: 30px; }
+        th { background: #333; color: white; padding: 12px; text-align: left; }
+        td { padding: 10px; border: 1px solid #ddd; }
+        .btn { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 0.9rem; font-weight: bold; }
+        .btn-add { background: #333; color: white; }
+        .btn-voltar { background: #6c757d; color: white; margin-left: 5px; }
+        .badge { padding: 4px 8px; border-radius: 3px; font-size: 0.8rem; font-weight: bold; }
+        .status-in { background: #d4edda; color: #155724; } /* Entrada Verde */
+        .status-out { background: #f8d7da; color: #721c24; } /* Saída Vermelha */
+        .status-low { background: #fff3cd; color: #856404; } /* Abaixo do mínimo */
+    </style>
 </head>
 <body>
-    <header class="main-header">
-        <div><strong>- Gestão de Estoque</strong></div>
-        <div>Olá, Administrador <button class="btn-sair" onclick="location.href='index.html'">Sair</button></div>
-    </header>
 
-    <div class="container">
-        <h2>Gestão de Estoque</h2>
-        <p class="subtitle">Registre movimentações de entrada e saída</p>
-
-        <div class="alert">
-            <strong>⚠ Alertas de Estoque:</strong><br>
-            "Notebook" está abaixo do mínimo (4/5)
+<header style="background: #222; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="background: #28a745; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+            📦
         </div>
-
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3>Produtos (Bubble Sort)</h3>
-            <div>
-                <a href="nova-movimentacao.html" class="btn btn-add">+ Nova Movimentação</a>
-                <a href="produtos.html" class="btn btn-cancel">Ver Produtos</a>
-            </div>
-        </div>
-
-        <table>
-            <thead>
-                <tr><th>ID</th><th>Produto</th><th>Quantidade</th><th>Est. Mínimo</th><th>Status</th></tr>
-            </thead>
-            <tbody>
-                <tr><td>3</td><td>Borracha Branca</td><td>200</td><td>30</td><td><span class="badge status-normal">Normal</span></td></tr>
-                <tr><td>6</td><td>Notebook</td><td>4</td><td>5</td><td><span class="badge status-low">Abaixo do mínimo</span></td></tr>
-            </tbody>
-        </table>
-
-        <h3 style="margin-top:40px">Histórico de Movimentações</h3>
-        <table>
-            <thead>
-                <tr><th>Data</th><th>Produto</th><th>Tipo</th><th>Quantidade</th></tr>
-            </thead>
-            <tbody>
-                <tr><td>05/04/2026</td><td>Notebook</td><td><span class="badge status-in">Entrada</span></td><td>5</td></tr>
-                <tr><td>05/04/2026</td><td>Notebook</td><td><span class="badge status-out">Saída</span></td><td>11</td></tr>
-            </tbody>
-        </table>
+        <strong style="font-size: 1.2rem;">StockFlow — Gestão de Estoque</strong>
     </div>
+    <div>
+        <span style="margin-right: 15px;">Olá, Administrador</span>
+        <button onclick="localStorage.removeItem('auth'); window.location.href='index.html'" style="background:#dc3545; color:white; border:none; padding:5px 15px; cursor:pointer; border-radius:4px; font-weight:bold;">Sair</button>
+    </div>
+</header>
+
+<div class="container">
+    <h2>Registre movimentações de entrada e saída</h2>
+    
+    <div id="alertas-container"></div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h3>Produtos (Bubble Sort)</h3>
+        <div>
+            <a href="movimentacao.html" class="btn btn-add">+ Nova Movimentação</a>
+            <a href="produtos.html" class="btn btn-voltar">Ver Produtos</a>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr><th>ID</th><th>Produto</th><th>Quantidade</th><th>Est. Mínimo</th><th>Status</th></tr>
+        </thead>
+        <tbody id="tabela-produtos"></tbody>
+    </table>
+
+    <h3>Histórico de Movimentações</h3>
+    <table>
+        <thead>
+            <tr><th>Data</th><th>Produto</th><th>Tipo</th><th>Quantidade</th></tr>
+        </thead>
+        <tbody id="tabela-historico"></tbody>
+    </table>
+</div>
+
+<script>
+    function carregarDados() {
+        const produtos = JSON.parse(localStorage.getItem('meus_produtos') || '[]');
+        const historico = JSON.parse(localStorage.getItem('historico_mov') || '[]');
+        
+        // 1. Renderizar Alertas e Tabela de Produtos
+        const tProdutos = document.getElementById('tabela-produtos');
+        const alertContainer = document.getElementById('alertas-container');
+        tProdutos.innerHTML = "";
+        alertContainer.innerHTML = "";
+
+        // Ordenação Alfabética (Simulando Bubble Sort)
+        produtos.sort((a, b) => a.nome.localeCompare(b.nome));
+
+        produtos.forEach(p => {
+            let statusHTML = '<span class="badge" style="background:#d4edda; color:#155724;">Normal</span>';
+            let estoqueMin = p.min || 5;
+
+            if (p.estoque < estoqueMin) {
+                statusHTML = '<span class="badge status-low">Abaixo do mínimo</span>';
+                alertContainer.innerHTML += `<div class="alert">⚠ <strong>Alerta de Estoque:</strong> "${p.nome}" está abaixo do mínimo (${p.estoque}/${estoqueMin})</div>`;
+            }
+
+            tProdutos.innerHTML += `
+                <tr>
+                    <td>${p.id}</td>
+                    <td>${p.nome}</td>
+                    <td>${p.estoque}</td>
+                    <td>${estoqueMin}</td>
+                    <td>${statusHTML}</td>
+                </tr>`;
+        });
+
+        // 2. Renderizar Histórico
+        const tHistorico = document.getElementById('tabela-historico');
+        tHistorico.innerHTML = "";
+
+        if (historico.length === 0) {
+            tHistorico.innerHTML = "<tr><td colspan='4' style='text-align:center'>Nenhuma movimentação.</td></tr>";
+        } else {
+            historico.forEach(h => {
+                tHistorico.innerHTML += `
+                    <tr>
+                        <td>${h.data}</td>
+                        <td>${h.produto}</td>
+                        <td><span class="badge ${h.tipo === 'Entrada' ? 'status-in' : 'status-out'}">${h.tipo}</span></td>
+                        <td>${h.qtd}</td>
+                    </tr>`;
+            });
+        }
+    }
+
+    window.onload = carregarDados;
+</script>
+<script>
+    function renderizarDashboard() {
+        // Puxa os produtos (já com as quantidades alteradas pela movimentação)
+        const produtos = JSON.parse(localStorage.getItem('meus_produtos') || '[]');
+        
+        // Simulação de Bubble Sort por Nome (como pede no seu print)
+        for (let i = 0; i < produtos.length; i++) {
+            for (let j = 0; j < (produtos.length - i - 1); j++) {
+                if (produtos[j].nome > produtos[j+1].nome) {
+                    let temp = produtos[j];
+                    produtos[j] = produtos[j+1];
+                    produtos[j+1] = temp;
+                }
+            }
+        }
+
+        const corpoProdutos = document.getElementById('tabela-produtos');
+        corpoProdutos.innerHTML = "";
+
+        produtos.forEach(p => {
+            // Define se mostra alerta de estoque baixo
+            let badgeClass = p.estoque < (p.min || 5) ? 'status-low' : 'status-normal';
+            let badgeText = p.estoque < (p.min || 5) ? 'Abaixo do mínimo' : 'Normal';
+
+            corpoProdutos.innerHTML += `
+                <tr>
+                    <td>${p.id}</td>
+                    <td>${p.nome}</td>
+                    <td><strong>${p.estoque}</strong></td> <td>${p.min || 5}</td>
+                    <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                </tr>`;
+        });
+
+        // Renderiza o Histórico (código que já fizemos antes)
+        const historico = JSON.parse(localStorage.getItem('historico_mov') || '[]');
+        const corpoHist = document.getElementById('tabela-historico');
+        corpoHist.innerHTML = historico.map(h => `
+            <tr>
+                <td>${h.data}</td>
+                <td>${h.produto}</td>
+                <td><span class="badge ${h.tipo === 'Entrada' ? 'status-in' : 'status-out'}">${h.tipo}</span></td>
+                <td>${h.qtd}</td>
+            </tr>
+        `).join('');
+    }
+    window.onload = renderizarDashboard;
+</script>
 </body>
 </html>

@@ -2,31 +2,39 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Sistema de Gestão de Estoque</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Login - Gestão de Estoque</title>
+    <style>
+        body { font-family: Arial; background: #222; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 8px; width: 350px; border-top: 5px solid #28a745; }
+        h2 { text-align: center; color: #333; margin-top: 0; }
+        label { display: block; font-weight: bold; margin: 10px 0 5px; }
+        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .btn-entrar { width: 100%; padding: 12px; background: #333; color: white; border: none; border-radius: 4px; margin-top: 20px; cursor: pointer; font-weight: bold; }
+        .error { color: red; font-size: 0.8rem; text-align: center; display: none; margin-top: 10px; }
+    </style>
 </head>
 <body>
-
-    <div class="login-container">
-        <header class="login-header">
-            <h3>Sistema de Gestão de Estoque</h3>
-        </header>
-
-        <form class="login-form">
-            <div class="input-group">
-                <label for="email">E-mail</label>
-                <input type="email" id="email" placeholder="Digite seu e-mail" required>
-            </div>
-
-            <div class="input-group">
-                <label for="password">Senha</label>
-                <input type="password" id="password" placeholder="Digite sua senha" required>
-            </div>
-
-            <button type="button" class="btn-primary" onclick="window.location.href='dashboard.html'">Entrar</button>
-        </form>
+    <div class="card">
+        <h2>Acesso</h2>
+        <label>E-mail</label>
+        <input type="email" id="email" placeholder="admin@sistema.com">
+        <label>Senha</label>
+        <input type="password" id="pass" placeholder="******">
+        <div id="error" class="error">Dados incorretos!</div>
+        <button class="btn-entrar" onclick="logar()">Entrar</button>
     </div>
 
+    <script>
+        function logar() {
+            const e = document.getElementById('email').value;
+            const p = document.getElementById('pass').value;
+            if(e === "admin@sistema.com" && p === "123456") {
+                localStorage.setItem('auth', 'true');
+                window.location.href = 'dashboard.html';
+            } else {
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+    </script>
 </body>
 </html>

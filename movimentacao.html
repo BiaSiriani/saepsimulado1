@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>StockFlow — Nova Movimentação</title>
+    <script>
+        if(localStorage.getItem('auth') !== 'true') window.location.href='index.html';
+    </script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+        
+        /* Header ajustado para ocupar o topo */
+        header { 
+            background: #222; 
+            color: white; 
+            padding: 10px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .logo-area { display: flex; align-items: center; gap: 10px; }
+        .logo-box { 
+            background: #28a745; 
+            width: 30px; 
+            height: 30px; 
+            border-radius: 6px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 18px; 
+        }
+
+        /* Container do Formulário */
+        .main-content {
+            display: flex;
+            justify-content: center;
+            padding-top: 50px;
+        }
+        .card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 8px; 
+            width: 100%; 
+            max-width: 500px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+        }
+        
+        h2 { margin-top: 0; color: #333; font-size: 1.5rem; }
+        p { color: #666; font-size: 0.9rem; margin-bottom: 25px; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; }
+        select, input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+            font-size: 1rem; 
+        }
+
+        .btn-group { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
+        .btn { 
+            padding: 12px 25px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            color: white; 
+            font-size: 0.9rem;
+        }
+        .btn-save { background: #28a745; }
+        .btn-cancel { background: #6c757d; }
+        .btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-area">
+        <div class="logo-box">📦</div>
+        <strong>StockFlow — Gestão de Estoque</strong>
+    </div>
+    <div>
+        <span>Olá, Administrador</span>
+        <button onclick="localStorage.removeItem('auth'); window.location.href='index.html'" style="background:#dc3545; color:white; border:none; padding:5px 12px; cursor:pointer; border-radius:4px; margin-left:10px;">Sair</button>
+    </div>
+</header>
+
+<div class="main-content">
+    <div class="card">
+        <h2>Nova Movimentação</h2>
+        <p>Registre entradas ou saídas de produtos</p>
+
+        <div class="form-group">
+            <label>Produto *</label>
+            <select id="select-produto">
+                <option value="">Selecione um produto...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Tipo de Movimentação *</label>
+            <select id="tipo-mov">
+                <option value="Entrada">Entrada</option>
+                <option value="Saída">Saída</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Quantidade *</label>
+            <input type="number" id="qtd-mov" placeholder="0" min="1">
+        </div>
+
+        <div class="form-group">
+            <label>Data *</label>
+            <input type="date" id="data-mov">
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-cancel" onclick="history.back()">Cancelar</button>
+            <button class="btn btn-save" onclick="registrar()">Registrar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Define a data atual
+    document.getElementById('data-mov').valueAsDate = new Date();
+
+    // Carrega os produtos salvos no localStorage
+    function popularProdutos() {
+        const produtos = JSON.parse(localStorage.getItem('meus_produtos') || '[]');
+        const select = document.getElementById('select-produto');
+        produtos.forEach(p => {
+            let opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.nome;
+            select.appendChild(opt);
+        });
+    }
+
+    function registrar() {
+        const prodId = document.getElementById('select-produto').value;
+        const tipo = document.getElementById('tipo-mov').value;
+        const qtd = parseInt(document.getElementById('qtd-mov').value);
+        const dataRaw = document.getElementById('data-mov').value;
+
+        if (!prodId || isNaN(qtd) || qtd <= 0 || !dataRaw) {
+            alert("Preencha todos os campos corretamente!");
+            return;
+        }
+
+        let produtos = JSON.parse(localStorage.getItem('meus_produtos') || '[]');
+        let pIndex = produtos.findIndex(p => p.id == prodId);
+
+        if (pIndex !== -1) {
+            // Lógica de estoque
+            if (tipo === "Saída" && produtos[pIndex].estoque < qtd) {
+                alert("Estoque insuficiente para esta saída!");
+                return;
+            }
+
+            if (tipo === "Entrada") {
+                produtos[pIndex].estoque += qtd;
+            } else {
+                produtos[pIndex].estoque -= qtd;
+            }
+
+            // Atualiza produtos
+            localStorage.setItem('meus_produtos', JSON.stringify(produtos));
+
+            // Salva no Histórico
+            let historico = JSON.parse(localStorage.getItem('historico_mov') || '[]');
+            const novaMov = {
+                data: dataRaw.split('-').reverse().join('/'),
+                produto: produtos[pIndex].nome,
+                tipo: tipo,
+                qtd: qtd
+            };
+            historico.unshift(novaMov);
+            localStorage.setItem('historico_mov', JSON.stringify(historico));
+
+            alert("Movimentação registrada!");
+            window.location.href = 'dashboard.html';
+        }
+    }
+
+    popularProdutos();
+</script>
+
+</body>
+</html>

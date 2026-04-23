@@ -1,35 +1,35 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8"><title>Editar Produto</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Editar Produto</title>
+    <style>
+        body { font-family: Arial; background: #f4f4f4; display: flex; justify-content: center; padding: 40px; }
+        .card { background: white; padding: 30px; border-radius: 8px; width: 500px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .btn-group { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-voltar { background: #6c757d; color: white; }
+        .btn-salvar { background: #28a745; color: white; }
+    </style>
 </head>
 <body>
-    <div class="container" style="max-width: 600px;">
-        <div class="card">
-            <h2>Editar Produto</h2>
-            <div class="form-group">
-                <label>Nome *</label>
-                <input type="text" value="Borracha Branca">
-            </div>
-            <div class="form-group">
-                <label>Descrição</label>
-                <textarea rows="3">Borracha macia escolar</textarea>
-            </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px">
-                <div class="form-group">
-                    <label>Preço (R$) *</label>
-                    <input type="text" value="1.50">
-                </div>
-                <div class="form-group">
-                    <label>Quantidade *</label>
-                    <input type="number" value="200">
-                </div>
-            </div>
-            <div class="btn-row">
-                <a href="produtos.html" class="btn btn-cancel">Cancelar</a>
-                <a href="produtos.html" class="btn btn-save">Salvar</a>
-            </div>
+    <div class="card">
+        <h2>Editar Produto</h2>
+        <div class="form-group">
+            <label>Nome do Produto</label>
+            <input type="text" value="Borracha Branca">
+        </div>
+        <div class="form-group">
+            <label>Descrição</label>
+            <textarea rows="3">Borracha macia escolar</textarea>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-voltar" onclick="history.back()">Voltar</button>
+            <button class="btn btn-salvar" onclick="alert('Salvo!'); history.back()">Salvar</button>
         </div>
     </div>
 </body>
