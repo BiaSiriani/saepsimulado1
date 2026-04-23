@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8"><title>Dashboard - Estoque</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="main-header">
+        <div><strong>- Gestão de Estoque</strong></div>
+        <div>Olá, Administrador <button class="btn-sair" onclick="location.href='index.html'">Sair</button></div>
+    </header>
+
+    <div class="container">
+        <h2>Gestão de Estoque</h2>
+        <p class="subtitle">Registre movimentações de entrada e saída</p>
+
+        <div class="alert">
+            <strong>⚠ Alertas de Estoque:</strong><br>
+            "Notebook" está abaixo do mínimo (4/5)
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>Produtos (Bubble Sort)</h3>
+            <div>
+                <a href="nova-movimentacao.html" class="btn btn-add">+ Nova Movimentação</a>
+                <a href="produtos.html" class="btn btn-cancel">Ver Produtos</a>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Produto</th><th>Quantidade</th><th>Est. Mínimo</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>3</td><td>Borracha Branca</td><td>200</td><td>30</td><td><span class="badge status-normal">Normal</span></td></tr>
+                <tr><td>6</td><td>Notebook</td><td>4</td><td>5</td><td><span class="badge status-low">Abaixo do mínimo</span></td></tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top:40px">Histórico de Movimentações</h3>
+        <table>
+            <thead>
+                <tr><th>Data</th><th>Produto</th><th>Tipo</th><th>Quantidade</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>05/04/2026</td><td>Notebook</td><td><span class="badge status-in">Entrada</span></td><td>5</td></tr>
+                <tr><td>05/04/2026</td><td>Notebook</td><td><span class="badge status-out">Saída</span></td><td>11</td></tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
